@@ -6,16 +6,11 @@ terraform {
     }
   }
 
-   backend "azurerm" {
-      # resource_group_name = "rg-prince-state-dev"
-      # storage_account_name = "stprinceprod28019"
-      # container_name = "tfprincestate"
-      # key = "ttt.tfstate"
-    }
+   backend "azurerm" {}
 
 }
 provider "azurerm" {
   features {}
-  subscription_id = "9e25d220-6410-4a47-8e3e-22042c54587d"
+  subscription_id = "e2e106a3-4a7b-4443-b147-e1da8d501783"
   }
  
