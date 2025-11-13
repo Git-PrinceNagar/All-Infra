@@ -48,8 +48,8 @@ stages:
     steps:
     - task: ManualValidation@1
       inputs:
-        notifyUsers: 'zprinag@gmail.com'
-        approvers: 'zprinag@gmail.com'
+        notifyUsers: 'prince.nagar22@gmail.com'
+        approvers: 'prince.nagar22@gmail.com'
         instructions: 'Plan check karo'
 
   - job: TerraformApply
