@@ -38,9 +38,9 @@ stages:
         workingDirectory: $(workDir)
         environmentServiceNameAzureRM: 'My-ARM'
 
-- stage: Deploy
-  displayName: Deploy
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+- stage: validation
+  displayName: validation
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   jobs: 
   - job: ManualValidation
     displayName: Manual Validation kardo Please
@@ -52,25 +52,30 @@ stages:
         approvers: 'prince.nagar22@gmail.com'
         instructions: 'Plan check karo'
 
-  - job: TerraformApply
-    displayName: Terraform Apply wala Job
-    dependsOn: ManualValidation
-    pool: server
-    steps:
-    - task: TerraformTask@5
-      inputs:
-        provider: 'azurerm'
-        command: 'init'
-        workingDirectory: $(workDir)
-        backendServiceArm: 'My-ARM'
-        backendAzureRmResourceGroupName: 'Backend-detail'
-        backendAzureRmStorageAccountName: 'stgprince15942'
-        backendAzureRmContainerName: 'cntprince'
-        backendAzureRmKey: 'ttt.tfstate'
-    - task: TerraformTask@5
-      inputs:
-        provider: 'azurerm'
-        command: 'apply'
-        workingDirectory: $(workDir)
-        environmentServiceNameAzureRM: 'My-ARM'
+- stage: deploy
+  dependsOn: validation
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+    - job: TerraformApply
+      displayName: Terraform Apply wala Job
+      steps:
+      - task: TerraformInstaller@1
+        inputs:
+          terraformVersion: 'latest'
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          workingDirectory: $(workDir)
+          backendServiceArm: 'My-ARM'
+          backendAzureRmResourceGroupName: 'Backend-detail'
+          backendAzureRmStorageAccountName: 'stgprince15942'
+          backendAzureRmContainerName: 'cntprince'
+          backendAzureRmKey: 'ttt.tfstate'
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'apply'
+          workingDirectory: $(workDir)
+          environmentServiceNameAzureRM: 'My-ARM'
 
