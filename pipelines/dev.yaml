@@ -1,0 +1,74 @@
+trigger: 
+- feature/*
+- main
+
+pool: Agents
+
+variables:
+  workDir: '$(System.DefaultWorkingDirectory)/Root/Dev-Env'
+
+stages:
+- stage: Build
+  displayName: Build
+  jobs:       
+  - job: TerraformInitPlan
+    displayName: Terraform Init and Plan Job
+    steps: 
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+
+    - task: TerraformTask@5
+      displayName: init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: $(workDir)
+        backendServiceArm: 'mono'
+        backendAzureRmStorageAccountName: 'stprinceprod28019'
+        backendAzureRmContainerName: 'tfprincestate'
+        backendAzureRmKey: 'ttt.tfstate'
+
+    - task: TerraformTask@5
+      displayName: plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: $(workDir)
+        environmentServiceNameAzureRM: 'mono'
+
+- stage: Deploy
+  displayName: Deploy
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  jobs: 
+  - job: ManualValidation
+    displayName: Manual Validation kardo Please
+    pool: server
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        notifyUsers: 'zprinag@gmail.com'
+        approvers: 'zprinag@gmail.com'
+        instructions: 'Plan check karo'
+
+  - job: TerraformApply
+    displayName: Terraform Apply wala Job
+    dependsOn: ManualValidation
+    pool: Agents
+    steps:
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: $(workDir)
+        backendServiceArm: 'mono'
+        backendAzureRmStorageAccountName: 'stprinceprod28019'
+        backendAzureRmContainerName: 'tfprincestate'
+        backendAzureRmKey: 'ttt.tfstate'
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: $(workDir)
+        environmentServiceNameAzureRM: 'mono'
+
