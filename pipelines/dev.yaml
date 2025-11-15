@@ -1,7 +1,4 @@
-# pipelines/dev.yaml
-
 trigger:
-  # - Feature/*
   - none
   
 variables:
@@ -14,15 +11,13 @@ stages:
       - job: TerraformInitPlan
         displayName: Terraform Init and Plan Job
         pool:
-          name: 'Default' # your self-hosted agent pool
+          name: 'Default'
         steps:
-          # Install Terraform CLI
           - task: TerraformInstaller@1
             displayName: Install Terraform (latest)
             inputs:
               terraformVersion: 'latest'
 
-          # Terraform Init with remote backend
           - task: TerraformTask@5
             displayName: init
             inputs:
@@ -35,7 +30,6 @@ stages:
               backendAzureRmKey: 'ttt.tfstate'
               workingDirectory: '$(workDir)'
 
-          # Terraform Plan
           - task: TerraformTask@5
             displayName: plan
             inputs:
@@ -47,15 +41,13 @@ stages:
   - stage: Deploy
     displayName: Deploy
     dependsOn: Build
-    # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     condition: succeeded()
     jobs:
       - job: TerraformApply
         displayName: Terraform Apply Job
         pool:
-          name: 'Default' # your self-hosted agent pool
+          name: 'Default'
         steps:
-          # Re-run init to ensure backend is ready
           - task: TerraformInstaller@1
             displayName: Install Terraform (latest)
             inputs:
@@ -72,7 +64,6 @@ stages:
               backendAzureRmKey: 'ttt.tfstate'
               workingDirectory: '$(workDir)'
 
-          # Terraform Apply
           - task: TerraformTask@5
             displayName: apply
             inputs:
